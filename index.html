@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gloomy Tree | Marine Sciences Student and Developer</title>
+<meta name="description" content="Portfolio of Gloomy Tree: marine sciences student and developer. Dive in to explore my academic path and find my links.">
+<meta property="og:title" content="Gloomy Tree | Marine Sciences Student and Developer">
+<meta property="og:description" content="An underwater portfolio: dive from the surface to the abyss.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Nunito:wght@400;700;800&family=VT323&family=Press+Start+2P&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<canvas id="fx" aria-hidden="true"></canvas>
+
+<div class="hud">
+  <button id="modeBtn" class="glass-btn" type="button" aria-label="Change time of day: cycle, day or night">🌞 Cycle</button>
+  <div id="depthMeter" class="glass-btn" aria-hidden="true">Surface · 0 m</div>
+</div>
+
+<main id="world">
+
+<!-- ===================== INTRO: ABOVE THE WATER ===================== -->
+<section id="intro">
+  <div class="skyclip">
+    <div class="sky sky-day"></div>
+    <div class="sky sky-night"></div>
+    <div class="sky sky-dusk"></div>
+    <div class="stars" id="stars"></div>
+    <div class="orb sun" id="sun"></div>
+    <div class="orb moon" id="moon"></div>
+    <div class="cloud c1"></div>
+    <div class="cloud c2"></div>
+    <div class="cloud c3"></div>
+
+    <div class="sea">
+      <div class="wave wv1"></div>
+      <div class="wave wv2"></div>
+      <div class="wave wv3"></div>
+    </div>
+    <div class="shade"></div>
+
+    <!-- Lighthouse -->
+    <svg class="lighthouse" viewBox="0 0 140 300" aria-hidden="true">
+      <defs>
+        <linearGradient id="beamG" x1="0" x2="1">
+          <stop offset="0" stop-color="#fff6b0" stop-opacity=".9"/>
+          <stop offset="1" stop-color="#fff6b0" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <g class="beam">
+        <polygon points="70,88 520,50 520,126" fill="url(#beamG)"/>
+        <polygon points="70,88 -380,50 -380,126" fill="url(#beamG)" transform="translate(0 0)"/>
+      </g>
+      <path d="M10 300 Q20 238 55 246 L95 246 Q125 236 135 300Z" fill="#7fd6a0"/>
+      <path d="M0 300 Q10 262 38 266 L100 266 Q130 262 140 300Z" fill="#ffd17a"/>
+      <polygon points="58,110 82,110 90,250 50,250" fill="#ffffff"/>
+      <polygon points="58,110 82,110 84,145 56,145" fill="#ff5d73"/>
+      <polygon points="54,180 86,180 88,215 52,215" fill="#ff5d73"/>
+      <rect x="50" y="100" width="40" height="9" rx="3" fill="#33406b"/>
+      <rect x="60" y="76" width="20" height="24" rx="3" fill="#fff0a0" class="lamp"/>
+      <polygon points="55,76 85,76 70,54" fill="#ff5d73"/>
+      <circle cx="70" cy="52" r="4" fill="#33406b"/>
+      <rect x="64" y="225" width="12" height="20" rx="6" fill="#6fd0ff"/>
+    </svg>
+
+    <!-- Seagulls -->
+    <div class="gull" style="top:14%;animation-duration:34s;animation-delay:-4s"><svg viewBox="0 0 48 20"><path class="wing" d="M2 14 Q12 0 24 12 Q36 0 46 14" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/></svg></div>
+    <div class="gull" style="top:24%;animation-duration:42s;animation-delay:-19s;scale:.75"><svg viewBox="0 0 48 20"><path class="wing" style="animation-delay:-.3s" d="M2 14 Q12 0 24 12 Q36 0 46 14" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/></svg></div>
+    <div class="gull" style="top:36%;animation-duration:38s;animation-delay:-28s;scale:.6"><svg viewBox="0 0 48 20"><path class="wing" style="animation-delay:-.6s" d="M2 14 Q12 0 24 12 Q36 0 46 14" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/></svg></div>
+    <div class="gull" style="top:19%;animation-duration:50s;animation-delay:-40s;scale:.9"><svg viewBox="0 0 48 20"><path class="wing" style="animation-delay:-.45s" d="M2 14 Q12 0 24 12 Q36 0 46 14" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/></svg></div>
+  </div>
+
+  <!-- Title -->
+  <div class="hero">
+    <h1>Marine Sciences Student and Developer</h1>
+    <p class="subtitle glass">About Gloomy Tree</p>
+  </div>
+
+  <!-- Fisherman + fishing line (line continues underwater to the Discord hook) -->
+  <div class="fisher" aria-label="A fisherman on a pier">
+    <svg viewBox="0 0 260 220" width="260" height="220" aria-hidden="true">
+      <rect x="96" y="178" width="164" height="14" rx="3" fill="#c98a4b"/>
+      <rect x="96" y="178" width="164" height="4" fill="#e6b070"/>
+      <rect x="116" y="192" width="9" height="28" fill="#8a5a2b"/>
+      <rect x="170" y="192" width="9" height="28" fill="#8a5a2b"/>
+      <rect x="230" y="192" width="9" height="28" fill="#8a5a2b"/>
+      <g class="angler">
+        <rect x="163" y="142" width="9" height="37" rx="3" fill="#2f6fd6"/>
+        <rect x="176" y="142" width="9" height="37" rx="3" fill="#2f6fd6"/>
+        <rect x="158" y="98" width="32" height="48" rx="12" fill="#ff7a59"/>
+        <rect x="158" y="120" width="32" height="6" fill="#ffb199"/>
+        <circle cx="174" cy="86" r="11" fill="#ffd2a6"/>
+        <ellipse cx="174" cy="78" rx="19" ry="4.5" fill="#ffd23f"/>
+        <path d="M162 78 Q174 58 186 78Z" fill="#ffd23f"/>
+        <circle cx="178" cy="87" r="1.6" fill="#33406b"/>
+        <path d="M176 93 Q179 95 182 92" stroke="#c0654f" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+        <path d="M164 112 L138 120" stroke="#ffd2a6" stroke-width="7" stroke-linecap="round"/>
+        <line x1="136" y1="121" x2="40" y2="40" stroke="#7a4a1f" stroke-width="4" stroke-linecap="round"/>
+        <circle cx="140" cy="118" r="6" fill="#6fd0ff" stroke="#33406b" stroke-width="2"/>
+      </g>
+      <rect x="212" y="164" width="22" height="16" rx="3" fill="#6fd0ff"/>
+      <path d="M216 164 L222 154 L230 164Z" fill="#ff9f1c"/>
+    </svg>
+    <div class="line" id="line">
+      <a class="catch" id="discordHook" href="https://discord.com/users/320502924830834689" target="_blank" rel="noopener" aria-label="Open my Discord profile (hanging from the fishing line)">
+        <svg class="hookj" viewBox="0 0 30 40" width="30" height="40" aria-hidden="true"><path d="M15 0 V24 Q15 36 6 34 Q0 32 3 26" fill="none" stroke="#e9f6ff" stroke-width="3" stroke-linecap="round"/></svg>
+        <span class="badge">
+          <svg viewBox="0 0 64 48" width="40" height="30" aria-hidden="true"><path d="M52 6 Q44 2 38 2 L36.5 5 Q32 4.5 27.500 5 L26 2 Q20 2 12 6 Q3 20 4 38 Q11 44 20 45 L23 41 Q32 43 41 41 L44 45 Q53 44 60 38 Q61 20 52 6Z" fill="#fff"/><ellipse cx="22" cy="26" rx="5" ry="6" fill="#5865F2"/><ellipse cx="42" cy="26" rx="5" ry="6" fill="#5865F2"/></svg>
+        </span>
+        <span class="tag">Discord</span>
+      </a>
+    </div>
+  </div>
+
+  <button id="nextBtn" class="next glass-btn" type="button">Next <span class="chev">⌄</span></button>
+
+  <div class="surface-wave" aria-hidden="true"></div>
+</section>
+
+<!-- ===================== THE DIVE ===================== -->
+<section id="dive">
+  <div class="ocean-bg"></div>
+  <div class="rays"></div>
+  <div class="shade"></div>
+
+  <svg class="jelly j1" viewBox="0 0 70 100" aria-hidden="true"><path d="M5 40 Q5 4 35 4 Q65 4 65 40 Q50 34 35 40 Q20 34 5 40Z" fill="#ff9be8" fill-opacity=".8"/><path class="t" d="M16 40 Q10 60 18 76 M28 40 Q22 64 30 90 M42 40 Q48 64 40 90 M54 40 Q60 60 52 76" stroke="#ffc8f3" stroke-width="3" fill="none" stroke-linecap="round"/></svg>
+  <svg class="jelly j2" viewBox="0 0 70 100" aria-hidden="true"><path d="M5 40 Q5 4 35 4 Q65 4 65 40 Q50 34 35 40 Q20 34 5 40Z" fill="#9be8ff" fill-opacity=".8"/><path class="t" d="M16 40 Q10 60 18 76 M28 40 Q22 64 30 90 M42 40 Q48 64 40 90 M54 40 Q60 60 52 76" stroke="#c8f6ff" stroke-width="3" fill="none" stroke-linecap="round"/></svg>
+  <svg class="jelly j3" viewBox="0 0 70 100" aria-hidden="true"><path d="M5 40 Q5 4 35 4 Q65 4 65 40 Q50 34 35 40 Q20 34 5 40Z" fill="#c59bff" fill-opacity=".85"/><path class="t" d="M16 40 Q10 60 18 76 M28 40 Q22 64 30 90 M42 40 Q48 64 40 90 M54 40 Q60 60 52 76" stroke="#e1c8ff" stroke-width="3" fill="none" stroke-linecap="round"/></svg>
+
+  <div class="timeline" id="timeline">
+    <div class="spine"></div>
+
+    <article class="stage left">
+      <div class="node">🐠</div>
+      <div class="card glass">
+        <div class="depth-tag"></div>
+        <h3>Scientific Highschool</h3>
+        <p>Where the dive began: a science-focused foundation in maths, physics, chemistry and biology.</p>
+      </div>
+    </article>
+
+    <article class="stage right">
+      <div class="node">🐢</div>
+      <div class="card glass">
+        <div class="depth-tag"></div>
+        <h3>Prep Classes <small>(Veterinarian)</small></h3>
+        <p>Intensive preparatory classes aiming at veterinary studies, with a heavy load of life sciences.</p>
+      </div>
+    </article>
+
+    <article class="stage left">
+      <div class="node">🐬</div>
+      <div class="card glass">
+        <div class="depth-tag"></div>
+        <h3>Marine Biology Bachelor</h3>
+        <p>Discovering marine life, ecosystems and the processes that drive the ocean.</p>
+        <ul class="chips">
+          <li class="chip done">Internship · IsoMer, Nantes</li>
+        </ul>
+      </div>
+    </article>
+
+    <article class="stage right">
+      <div class="node">🦑</div>
+      <div class="card glass">
+        <div class="depth-tag"></div>
+        <h3>Water Sciences Master</h3>
+        <p>Going deeper into aquatic systems and research, with two internships in Norway.</p>
+        <ul class="chips">
+          <li class="chip done" title="Institute of Marine Research">Internship · IMR Tromsø <b>Completed</b></li>
+          <li class="chip future" title="Institute of Marine Research">Internship · IMR Bergen <b>Upcoming</b></li>
+        </ul>
+      </div>
+    </article>
+  </div>
+
+  <!-- Seabed: wreck + treasure -->
+  <div class="seabed" id="seabed">
+    <h2>Sunken Treasure</h2>
+    <p class="seabed-hint">Open the chest to find my email.</p>
+
+    <div class="scene">
+      <svg class="ship" viewBox="0 0 600 400" aria-label="A sunken ship">
+        <g transform="rotate(-9 300 250)">
+          <rect x="330" y="60" width="14" height="190" rx="4" fill="#8a5a2b" transform="rotate(6 337 250)"/>
+          <rect x="268" y="96" width="140" height="10" rx="4" fill="#8a5a2b" transform="rotate(6 337 100)"/>
+          <g class="sail"><path d="M282 108 L398 115 L390 196 Q340 212 290 190Z" fill="#fff5e0" stroke="#ecd9aa" stroke-width="3"/><path d="M300 150 L330 190 L296 188Z" fill="#ffd2e0"/></g>
+          <rect x="150" y="120" width="11" height="130" rx="4" fill="#8a5a2b" transform="rotate(-8 155 250)"/>
+          <path d="M50 215 L560 200 Q545 335 410 355 L190 360 Q80 335 50 215Z" fill="#b9773e"/>
+          <path d="M62 252 Q300 266 548 240" stroke="#8f5a2a" stroke-width="4" fill="none"/>
+          <path d="M72 288 Q300 304 536 276" stroke="#8f5a2a" stroke-width="4" fill="none"/>
+          <path d="M100 322 Q300 338 500 312" stroke="#8f5a2a" stroke-width="4" fill="none"/>
+          <path d="M50 215 L560 200 L556 224 L56 240Z" fill="#e0a45a"/>
+          <g fill="#8a5a2b"><rect x="90" y="190" width="8" height="28" rx="3"/><rect x="190" y="188" width="8" height="28" rx="3"/><rect x="450" y="182" width="8" height="28" rx="3"/><rect x="520" y="180" width="8" height="28" rx="3"/></g>
+          <g class="ports"><circle cx="150" cy="288" r="19" fill="#8fe8ff" stroke="#ffd36b" stroke-width="6"/><circle cx="250" cy="292" r="19" fill="#8fe8ff" stroke="#ffd36b" stroke-width="6"/><circle cx="350" cy="290" r="19" fill="#8fe8ff" stroke="#ffd36b" stroke-width="6"/></g>
+          <path d="M424 262 Q448 250 466 276 Q470 312 440 322 Q418 296 424 262Z" fill="#33295f"/>
+          <circle class="pb" cx="150" cy="270" r="4" fill="#fff" fill-opacity=".8"/>
+          <circle class="pb" style="animation-delay:-1.3s" cx="250" cy="274" r="3.500" fill="#fff" fill-opacity=".8"/>
+          <circle class="pb" style="animation-delay:-2.4s" cx="352" cy="272" r="4.500" fill="#fff" fill-opacity=".8"/>
+          <path d="M150 330 Q130 300 160 296 Q175 330 150 330Z" fill="#3ddc84"/>
+          <ellipse cx="480" cy="212" rx="40" ry="10" fill="#3ddc84" fill-opacity=".85"/>
+          <ellipse cx="90" cy="226" rx="28" ry="8" fill="#3ddc84" fill-opacity=".85"/>
+        </g>
+        <g fill="none" stroke-linecap="round">
+          <path d="M20 390 Q10 340 36 330 M36 330 Q50 310 70 320 M36 330 Q30 300 48 292" stroke="#ff6fa5" stroke-width="9"/>
+          <path d="M560 392 Q574 350 552 338 M552 338 Q536 322 520 330 M552 338 Q560 310 544 300" stroke="#ff9f1c" stroke-width="9"/>
+        </g>
+      </svg>
+
+      <svg class="weed w1" viewBox="0 0 40 120"><path d="M20 120 C5 90 35 70 20 40 C10 20 25 10 20 0" stroke="#3ddc84" stroke-width="9" fill="none" stroke-linecap="round"/></svg>
+      <svg class="weed w2" viewBox="0 0 40 120"><path d="M20 120 C35 90 5 70 20 40 C30 20 15 10 20 0" stroke="#7bed9f" stroke-width="9" fill="none" stroke-linecap="round"/></svg>
+      <svg class="weed w3" viewBox="0 0 40 120"><path d="M20 120 C5 90 35 70 20 40 C10 20 25 10 20 0" stroke="#2fd1a3" stroke-width="9" fill="none" stroke-linecap="round"/></svg>
+      <div class="crab" aria-hidden="true">🦀</div>
+      <div class="shell" aria-hidden="true">🐚</div>
+      <div class="star" aria-hidden="true">⭐</div>
+
+      <div class="chestwrap">
+        <div class="dialog glass" id="dialog" role="status" aria-live="polite">
+          <span id="dlgText">Psst! My email is hidden in this chest. Open it!</span>
+          <div id="mailBox" hidden>
+            <a id="mailLink" href="#"></a>
+            <button id="copyBtn" type="button">Copy</button>
+          </div>
+        </div>
+        <button id="chest" class="chest" type="button" aria-expanded="false" aria-label="Open the treasure chest to reveal my email">
+          <svg viewBox="0 0 200 150" width="100%" aria-hidden="true">
+            <defs>
+              <radialGradient id="glowG" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#fff7b0"/><stop offset="1" stop-color="#ffd23f" stop-opacity="0"/></radialGradient>
+            </defs>
+            <ellipse class="glow" cx="100" cy="64" rx="100" ry="70" fill="url(#glowG)"/>
+            <rect x="20" y="68" width="160" height="72" rx="10" fill="#a8602b"/>
+            <rect x="20" y="68" width="160" height="14" fill="#7d4318"/>
+            <rect x="46" y="68" width="14" height="72" fill="#ffd23f"/>
+            <rect x="140" y="68" width="14" height="72" fill="#ffd23f"/>
+            <rect x="20" y="124" width="160" height="16" rx="8" fill="#ffd23f" fill-opacity=".9"/>
+            <g class="coins">
+              <ellipse cx="100" cy="68" rx="70" ry="9" fill="#ffd23f"/>
+              <circle cx="66" cy="62" r="9" fill="#ffe36b" stroke="#e0a800" stroke-width="2"/>
+              <circle cx="92" cy="58" r="10" fill="#ffe36b" stroke="#e0a800" stroke-width="2"/>
+              <circle cx="120" cy="60" r="9" fill="#ffe36b" stroke="#e0a800" stroke-width="2"/>
+              <circle cx="142" cy="64" r="8" fill="#ffe36b" stroke="#e0a800" stroke-width="2"/>
+              <circle cx="104" cy="48" r="9" fill="#6fe3ff" stroke="#2aa6c9" stroke-width="2"/>
+              <circle cx="80" cy="47" r="7" fill="#ff7ab8" stroke="#d94a8c" stroke-width="2"/>
+            </g>
+            <g class="lid">
+              <path d="M20 70 Q20 22 100 22 Q180 22 180 70Z" fill="#c07334"/>
+              <path d="M20 70 Q20 22 100 22 Q180 22 180 70" fill="none" stroke="#7d4318" stroke-width="4"/>
+              <rect x="46" y="26" width="14" height="44" fill="#ffd23f"/>
+              <rect x="140" y="26" width="14" height="44" fill="#ffd23f"/>
+              <rect x="88" y="54" width="24" height="26" rx="5" fill="#ffd23f" stroke="#c99400" stroke-width="3"/>
+              <circle cx="100" cy="66" r="4" fill="#7d4318"/>
+            </g>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <button class="glass-btn to-terminal" id="toTerminal" type="button">💾 There is an old computer in the wreck…</button>
+    <div class="sand" aria-hidden="true"></div>
+  </div>
+</section>
+
+<!-- ===================== RETRO ZONE ===================== -->
+<section id="terminal">
+  <div class="pixel-edge" aria-hidden="true"></div>
+  <div class="px-cloud pc1" aria-hidden="true"></div>
+  <div class="px-cloud pc2" aria-hidden="true"></div>
+  <div class="hill" aria-hidden="true"></div>
+
+  <div class="xp-window" role="region" aria-label="Retro terminal with my GitHub link">
+    <div class="xp-title">
+      <span>C:\WINDOWS\system32\cmd.exe</span>
+      <span class="xp-btns" aria-hidden="true"><i>_</i><i>□</i><i class="x">x</i></span>
+    </div>
+    <div class="xp-body" id="xpBody"></div>
+  </div>
+
+  <div class="taskbar">
+    <span class="start">start</span>
+    <button type="button" class="task-item" id="toSurface">↑ Back to surface</button>
+    <span class="tray" id="clock">00:00</span>
+  </div>
+</section>
+
+</main>
+
+<script src="script.js"></script>
+</body>
+</html>
