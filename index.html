@@ -122,6 +122,11 @@
       <pre class="art weed" id="weed2" aria-hidden="true"></pre>
       <pre class="art weed" id="weed3" aria-hidden="true"></pre>
       <pre class="art crab" id="crab" aria-hidden="true"></pre>
+      <button type="button" class="critter" id="vent" data-species="vent" aria-label="Field guide: giant tube worms at a hydrothermal vent"><pre class="art" aria-hidden="true"></pre></button>
+      <button type="button" class="critter" id="dumbo" data-species="dumbo" aria-label="Field guide: dumbo octopus"><pre class="art" aria-hidden="true"></pre></button>
+      <button type="button" class="critter" id="tripod" data-species="tripod" aria-label="Field guide: tripod fish"><pre class="art" aria-hidden="true"></pre></button>
+      <button type="button" class="critter" id="brittle" data-species="brittle" aria-label="Field guide: brittle star"><pre class="art" aria-hidden="true"></pre></button>
+      <button type="button" class="critter" id="cucumber" data-species="cucumber" aria-label="Field guide: sea cucumber"><pre class="art" aria-hidden="true"></pre></button>
 
       <div class="chestwrap">
         <div class="win msg" id="dialog" role="status" aria-live="polite">
@@ -154,12 +159,37 @@
 
 </main>
 
+<div class="win guide" id="guide" role="dialog" aria-labelledby="gName" hidden>
+  <div class="titlebar"><span class="ico">[?]</span><span class="t">FieldGuide.exe</span><span class="tb-btns"><button type="button" class="x" id="gClose" aria-label="Close field guide">x</button></span></div>
+  <div class="win-body">
+    <pre class="g-art" id="gArt" aria-hidden="true"></pre>
+    <div class="depth-tag" id="gZone"></div>
+    <h3 id="gName"></h3>
+    <p class="g-sci" id="gSci"></p>
+    <p class="g-fact" id="gFact"></p>
+    <div class="g-nav">
+      <button type="button" class="xp-btn" id="gPrev">&lt; Prev</button>
+      <span id="gCount"></span>
+      <button type="button" class="xp-btn" id="gNext">Next &gt;</button>
+    </div>
+  </div>
+</div>
+
+<div class="balloon" id="balloon" role="status" hidden>
+  <button type="button" class="b-x" id="bClose" aria-label="Dismiss tip">x</button>
+  <b id="bTitle"></b>
+  <p id="bText"></p>
+</div>
+
+<audio id="music" src="music/theme.mp3" loop preload="none"></audio>
+
 <div class="startmenu" id="startMenu" hidden>
   <div class="sm-head">Gloomy Tree</div>
   <button type="button" data-go="intro">Surface</button>
   <button type="button" data-go="timeline">Academic dive</button>
   <button type="button" data-go="seabed">Sunken treasure</button>
   <button type="button" data-go="terminal">GitHub terminal</button>
+  <button type="button" id="guideBtn">Field guide</button>
   <a href="https://discord.com/users/320502924830834689" target="_blank" rel="noopener">Discord</a>
 </div>
 <nav class="taskbar" aria-label="Site navigation">
@@ -172,6 +202,7 @@
   </div>
   <div class="tray">
     <button id="modeBtn" class="tray-btn" type="button" aria-label="Change time of day: cycle, day or night">[*] CYCLE</button>
+    <button id="musicBtn" class="tray-btn" type="button" aria-pressed="false" aria-label="Background music">[&lt;x] OFF</button>
     <span id="depthMeter" aria-hidden="true">Surface 0 m</span>
     <span id="clock">00:00</span>
   </div>

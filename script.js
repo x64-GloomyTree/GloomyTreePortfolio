@@ -101,6 +101,46 @@ o
 |§y======§.|§y$o$O$o$O§.|§y======§.|
 |      |        |      |
 |§y======§.|________|§y======§.|
+`,
+  vent_a: String.raw`
+        §d_[]_§.
+  §rv§.    §d|    |§.  §rw§.
+  §w|§. §rw§. §d/|    |\§. §w|§. §rv§.
+  §w|§. §w|§.§d/ |    | \§.§w|§. §w|§.
+§d__§w|§.§d_§w|§.§d/__|____|__\§w|§.§d_§w|§.§d__§.
+`,
+  vent_b: String.raw`
+        §d_[]_§.
+  §rw§.    §d|    |§.  §rv§.
+  §w|§. §rv§. §d/|    |\§. §w|§. §rw§.
+  §w|§. §w|§.§d/ |    | \§.§w|§. §w|§.
+§d__§w|§.§d_§w|§.§d/__|____|__\§w|§.§d_§w|§.§d__§.
+`,
+  dumbo_a: String.raw`
+   §p_.-"-._§.
+ §p~(§. §wo§.  §wo§. §p)~§.
+   §p)/||\(§.
+  §p(  ||  )§.
+`,
+  dumbo_b: String.raw`
+   §p_.-"-._§.
+ §p-(§. §wo§.  §wo§. §p)-§.
+   §p(\||/)§.
+   §p) || (§.
+`,
+  tripod: String.raw`
+ §d   __§.
+ §d><(__§.§wo§.§d>§.
+ §d  /|\§.
+ §d / | \§.
+`,
+  brittle: String.raw`
+§p\ | /§.
+§p -*-§.
+§p/ | \§.
+`,
+  cucumber: String.raw`
+§r(o:::::::::)~§.
 `
 };
 
@@ -125,6 +165,8 @@ $('#lighthouse').innerHTML = markup(ART.lighthouse.replace(/^\n/, '').replace(/\
 $('#fisherArt').innerHTML = markup(ART.fisher.replace(/^\n/, '').replace(/\n$/, ''));
 $('#ship').innerHTML = markup(ART.ship.replace(/^\n/, '').replace(/\n$/, ''));
 $('#chestArt').innerHTML = markup(padTop(rows(ART.chest_closed), 8).join('\n'));
+const critterArt = (id, k) => { $('#' + id + ' pre').innerHTML = markup(rows(ART[k]).join('\n')); };
+['tripod', 'brittle', 'cucumber'].forEach(id => critterArt(id, id));
 $('#seabed .seabed-title').textContent = [
   '+----------------------+',
   '|   SUNKEN  TREASURE   |',
@@ -199,6 +241,7 @@ function computeStageDepths() {
 function layout() {
   introH = intro.offsetHeight; wl = Math.round(introH * 0.58);
   buildSpine(); buildSand(); placeLine(); computeStageDepths();
+  dTop = pageTop(dive); dH = dive.offsetHeight;
   pageH = document.documentElement.scrollHeight;
 }
 
@@ -273,6 +316,190 @@ const plankton = Array.from({ length: isMobile ? 26 : 60 }, () => ({ x: Math.ran
 const JELLY = (f) => ['  .-"""-.', ' (  o o  )', "  '-----'", f ? '   ) ) )' : '   ( ( (', f ? '   ( ( (' : '   ) ) )'];
 const jellies = [{ xf: 0.1, yf: 0.2, col: [217, 138, 181] }, { xf: 0.86, yf: 0.42, col: [124, 198, 220] }, { xf: 0.14, yf: 0.66, col: [179, 160, 232] }];
 
+/* ---------- Ocean life: sprites, species, field guide data ---------- */
+const PAL = { r: '#d9776c', y: '#ecd08a', g: '#7fd1a0', c: '#7cc6dc', p: '#d98ab5', b: '#b88a5a', w: '#dfe8f2', d: '#6f8aa0', o: '#f0964a', k: '#b3a85a', v: '#9a8fe0', s: '#8aa3c8' };
+const MIRROR = { '(': ')', ')': '(', '/': '\\', '\\': '/', '<': '>', '>': '<', '[': ']', ']': '[', '{': '}', '}': '{', '`': "'", "'": '`' };
+// Turns §-marked art into colored runs so each frame costs a few fillText calls; flip mirrors it.
+function compile(src, base, flip) {
+  const grid = rows(src).map(line => {
+    const out = []; let col = null;
+    for (let i = 0; i < line.length; i++) {
+      if (line[i] === '§') { col = line[i + 1] === '.' ? null : PAL[line[i + 1]]; i++; continue; }
+      out.push([line[i], col]);
+    }
+    return out;
+  });
+  const w = Math.max(...grid.map(r => r.length));
+  if (flip) grid.forEach((r, i) => { while (r.length < w) r.push([' ', null]); grid[i] = r.reverse().map(([c, k]) => [MIRROR[c] || c, k]); });
+  const runs = [];
+  grid.forEach((r, y) => {
+    let s = '', key = null, x0 = 0;
+    const flush = () => { if (key && key !== ' ') runs.push({ x: x0, y, s, col: key }); };
+    r.forEach(([c, k], x) => { const kk = c === ' ' ? ' ' : (k || base); if (kk !== key) { flush(); key = kk; s = ''; x0 = x; } s += c; });
+    flush();
+  });
+  return { w, h: grid.length, runs };
+}
+const both = (src, base) => ({ r: compile(src, base, false), l: compile(src, base, true) });
+function drawArt(a, x, y, alpha) {
+  for (const run of a.runs) text(run.s, x + run.x * cw, y + run.y * RH, run.col, alpha);
+}
+
+const SEA = {
+  turtle: [String.raw`
+      §g_______§.
+    §g/\ \/ \/ /\§.§k___§.
+ §k~~§.§g|__\/\_/\/__|§.§k_o\§.
+      §k\_\§.    §k\_\§.
+`, String.raw`
+      §g_______§.
+    §g/\ \/ \/ /\§.§k___§.
+ §k~~§.§g|__\/\_/\/__|§.§k_o\§.
+     §k/_/§.     §k/_/§.
+`],
+  manta: [String.raw`
+   .__
+    \ '-.__
+ ~~--==(   oo>
+    / .-'''
+   '''
+`, String.raw`
+    ___
+   '-. '-.__
+ ~~--==(   oo>
+   .-' .-'''
+    '''
+`],
+  humpback: [String.raw`
+ _                  __..---~~~~~~~--..__
+\ '.__..---~~~~~~~~~                    ''-._
+ >   ___                           §wo§.        '.
+/_.''   ''--..____        ____..----------..__/
+                  '\_ \_.'  _.'
+                     '-.__.'
+`],
+  shark: [String.raw`
+                 |\
+         ___..---' '-..__
+ \'.--''~                ''-._
+  >    -      §w))))§.    §wo§.    __ >
+ /.'--..__         __..--''
+          '--/\---'
+`, String.raw`
+                 |\
+         ___..---' '-..__
+  \.--''~                ''-._
+  )>   -      §w))))§.    §wo§.    __ >
+  /'--..__         __..--''
+          '--/\---'
+`],
+  sperm: [String.raw`
+  _                   .____________________
+ \ '-.___.-------------'                    |
+  >  _                                 §wo§.    |
+ /_.' '--.___________________   ____________/
+                             \_/  §w\/\/\/\/§.
+`],
+  squid: [String.raw`
+     /\
+    /  \
+   |    |
+   |    |
+   | §wO§.  |
+   |    |
+   /\/\/\
+  (( || ))
+   )) || ((
+  ((  ||  ))
+   )  ||  (
+  (   ||   )
+      ''
+`, String.raw`
+     /\
+    /  \
+   |    |
+   |    |
+   | §wO§.  |
+   |    |
+   /\/\/\
+  )) || ((
+   (( || ))
+  ))  ||  ((
+   (  ||  )
+  )   ||   (
+      ''
+`],
+  angler: [String.raw`
+        _.~
+    ___/
+  /'    §wo§.  '\
+ >  ((     §wV§.\
+  \_   .§wvVvVv§./
+    '-.____.'
+`],
+  reef: [String.raw`
+    §p\|/§.         §y.-.§.     §c)\(/)(§.
+  §p\ \|/ /§.      §y(   )§.    §c\\||//§.
+   §p\_|_/§.  §o\|/§.  §y'-'§.     §c(____)§.
+§d.-~~~~~~~~§o\|/§.§d~~~~~~~~~~~~~~~~~~~~-.§.
+§d/  .  ,  .   ,  .   '   .   ,   .   \§.
+`, String.raw`
+    §p\|/§.         §y.-.§.     §c(/)(\)§.
+  §p\ \|/ /§.      §y(   )§.    §c//||\\§.
+   §p\_|_/§.  §o\|/§.  §y'-'§.     §c(____)§.
+§d.-~~~~~~~~§o\|/§.§d~~~~~~~~~~~~~~~~~~~~-.§.
+§d/  .  ,  .   ,  .   '   .   ,   .   \§.
+`],
+  ledge: [String.raw`
+§d   .-~~-._.--.__§.
+§d _/  ,   .    ' '-._§.
+§d/ .    '   ,  .     \__§.
+`],
+  clown: [String.raw`§o><§w|§o)§w|§o>§.`]
+};
+const S = {};
+const SPR_BASE = { turtle: '#9fc28a', manta: '#8aa3c8', humpback: '#9fb4d0', shark: '#8fa9c4', sperm: '#8a93ad', squid: '#d9776c', angler: '#6d7a96', reef: '#dfe8f2', ledge: '#6f8aa0', clown: '#f0964a' };
+Object.entries(SEA).forEach(([k, frames]) => { S[k] = frames.map(f => both(f, SPR_BASE[k])); });
+
+// Depths in metres place each species at its real zone on the dive.
+const SPECIES = {
+  kelp: { name: 'Giant kelp', sci: 'Macrocystis pyrifera', zone: 'Sunlight zone', fact: 'One of the fastest-growing organisms on Earth, up to about 50 cm a day. Gas-filled bladders (pneumatocysts) hold its fronds up toward the light.', art: '   )\n  (,\n   )\n  ,(\n   )\n  (', col: 'k' },
+  coral: { name: 'Reef-building coral', sci: 'Scleractinia', zone: 'Sunlight zone', fact: 'Each polyp hosts symbiotic algae (zooxanthellae) that photosynthesise and supply most of its energy, which is why reefs stay in sunlit water.', art: SEA.reef[0] },
+  clown: { name: 'Clown anemonefish', sci: 'Amphiprion ocellaris', zone: 'Sunlight zone', fact: 'A mucus coat protects it from its anemone\'s stinging cells. All are born male; when a group\'s female dies, the dominant male changes sex to replace her.', art: SEA.clown[0] },
+  turtle: { name: 'Green sea turtle', sci: 'Chelonia mydas', zone: 'Sunlight zone', fact: 'Adults graze on seagrass and algae. That plant diet tints their body fat green, which gave the species its name.', art: SEA.turtle[0] },
+  manta: { name: 'Giant oceanic manta ray', sci: 'Mobula birostris', zone: 'Sunlight zone', fact: 'Wingspan up to about 7 m. It filter-feeds on zooplankton and has one of the largest brain-to-body ratios of any fish.', art: SEA.manta[0] },
+  jelly: { name: 'Moon jellyfish', sci: 'Aurelia aurita', zone: 'Sunlight zone', fact: 'No brain, heart or blood. Sensory organs called rhopalia around the bell detect light and keep it oriented.', art: JELLY(0).join('\n'), col: 'p' },
+  humpback: { name: 'Humpback whale', sci: 'Megaptera novaeangliae', zone: 'Sunlight zone', fact: 'Males sing long, complex songs lasting up to 20 minutes, and whole populations shift their song from year to year.', art: SEA.humpback[0] },
+  shark: { name: 'Blue shark', sci: 'Prionace glauca', zone: 'Sunlight to twilight zone', fact: 'One of the widest-ranging sharks, crossing entire ocean basins. It dives into the twilight zone to hunt squid.', art: SEA.shark[0] },
+  siphon: { name: 'Giant siphonophore', sci: 'Praya dubia', zone: 'Twilight zone', fact: 'Not a single animal but a colony of specialised zooids. It can reach 40 to 50 m, longer than a blue whale.', art: '  ()\n  o *\n *  o\n  o  *\n   *  o\n  o *', col: 'c' },
+  squid: { name: 'Giant squid', sci: 'Architeuthis dux', zone: 'Twilight to midnight zone', fact: 'Its eyes reach about 27 cm across, among the largest in the animal kingdom, thought to help it spot the glow stirred up by approaching sperm whales.', art: SEA.squid[0] },
+  sperm: { name: 'Sperm whale', sci: 'Physeter macrocephalus', zone: 'Dives to the midnight zone', fact: 'Dives beyond 1,000 m to hunt squid and can hold its breath for over an hour. It has the largest brain of any known animal.', art: SEA.sperm[0] },
+  angler: { name: 'Humpback anglerfish', sci: 'Melanocetus johnsonii', zone: 'Midnight zone', fact: 'The female dangles a lure (esca) lit by bioluminescent bacteria living inside it. Males are tiny by comparison.', art: SEA.angler[0] },
+  dumbo: { name: 'Dumbo octopus', sci: 'Grimpoteuthis', zone: 'Abyssal zone', fact: 'Hovers by flapping ear-like fins. Among the deepest-living octopuses, recorded close to 7,000 m.', art: ART.dumbo_a },
+  tripod: { name: 'Tripod fish', sci: 'Bathypterois grallator', zone: 'Midnight to abyssal zone', fact: 'Stands on three stiff, elongated fin rays facing into the current, waiting for prey to drift into its outstretched pectoral fins.', art: ART.tripod },
+  brittle: { name: 'Brittle star', sci: 'Ophiuroidea', zone: 'Every depth', fact: 'Relatives of sea stars that crawl with snake-like arms. They carpet large stretches of the deep seafloor.', art: ART.brittle },
+  cucumber: { name: 'Sea cucumber', sci: 'Holothuroidea', zone: 'Abyssal zone', fact: 'Often the most abundant large animal on abyssal plains, slowly vacuuming organic "marine snow" from the sediment.', art: ART.cucumber },
+  vent: { name: 'Giant tube worms', sci: 'Riftia pachyptila', zone: 'Hydrothermal vents', fact: 'Vent fluid can exceed 350 °C. These worms have no mouth or gut as adults: bacteria inside them turn hydrogen sulfide into food.', art: ART.vent_a }
+};
+const GUIDE_ORDER = Object.keys(SPECIES);
+
+// Big passers-by cross the screen now and then at their own depth; t in seconds.
+const PASSERS = [
+  { id: 'turtle', m: 30, sp: 42, period: 34, off: 4 },
+  { id: 'manta', m: 70, sp: 55, period: 41, off: 18 },
+  { id: 'humpback', m: 140, sp: 38, period: 52, off: 30 },
+  { id: 'shark', m: 320, sp: 80, period: 29, off: 9 },
+  { id: 'sperm', m: 1300, sp: 34, period: 58, off: 22 }
+];
+const KELP = [{ xf: 0.025, top: 12, ph: 0 }, { xf: 0.06, top: 24, ph: 1.7 }, { xf: 0.095, top: 9, ph: 3.1 }, { xf: 0.13, top: 34, ph: 4.4 }];
+const KELP_BASE = 120;
+const hits = [], food = [], pings = [], sparks = [];
+const flash = {};
+let dTop = 0, dH = 1, fedAt = -99, curDepth = 0;
+const yAt = m => dTop + Math.pow(m / 6000, 1 / 2.8) * Math.max(1, dH - H);
+function hit(id, x, y, w, h) { hits.push({ id, x, y, w, h }); }
+function hitAt(x, y) { for (let i = hits.length - 1; i >= 0; i--) { const h = hits[i]; if (x >= h.x && x <= h.x + h.w && y >= h.y && y <= h.y + h.h) return h.id; } return null; }
+
 let waterF = 0, depthF = 0, scrollYc = 0, diveRect = null;
 
 function drawBackground(t) {
@@ -324,6 +551,8 @@ function drawBackground(t) {
     const g = ctx.createLinearGradient(0, wy0, 0, pg - sy);
     WATER.forEach(([f, c]) => g.addColorStop(f, rgb(mixC(c, [3, 6, 18], nightVal * 0.55))));
     ctx.fillStyle = g; ctx.fillRect(0, y0, W, H - y0);
+    // the deep swallows light, so bioluminescence has something to glow against
+    if (depthF > 0) { ctx.fillStyle = `rgba(2,4,14,${(depthF * 0.55).toFixed(3)})`; ctx.fillRect(0, y0, W, H - y0); }
   }
   // waves in the sea band
   const nW = Math.floor((introH - wl) / RH);
@@ -376,6 +605,151 @@ function drawBackground(t) {
   ctx.globalAlpha = 1;
 }
 
+const onScreen = (y, h) => y + h > -40 && y < H + 40;
+const glow = (col, blur) => { ctx.shadowColor = col; ctx.shadowBlur = blur; };
+function flashOf(id, dt) { const f = flash[id] || 0; flash[id] = Math.max(0, f - dt * 0.7); return f; }
+
+function drawScenery(dt, t) {
+  hits.length = 0;
+  if (waterF <= 0.01) return;
+  const sy = scrollYc, narrow = W < 760, dim = narrow ? 0.55 : 1, f2 = Math.floor(t * 1.4) % 2;
+
+  // kelp forest rooted on a rocky ledge, left edge
+  const kb = yAt(KELP_BASE) - sy;
+  if (onScreen(yAt(5) - sy, kb - yAt(5) + sy + 60)) {
+    let minY = kb;
+    KELP.forEach(k => {
+      const ty = yAt(k.top) - sy, n = Math.max(2, Math.floor((kb - ty) / RH)), bx = W * k.xf;
+      for (let i = 0; i < n; i++) {
+        const y = kb - i * RH;
+        if (y < -RH || y > H + RH) continue;
+        const amp = Math.min(i * 0.09, 2.6), sw = Math.sin(t * 0.7 + k.ph + i * 0.17) * amp;
+        const nx = Math.sin(t * 0.7 + k.ph + (i + 1) * 0.17) * Math.min((i + 1) * 0.09, 2.6);
+        const x = bx + sw * cw;
+        // wavy stipe, with a bladder and a frond every few rows that trails with the swell
+        text((i + Math.floor(k.ph)) % 2 ? ')' : '(', x, y, '#b3a85a', 0.9 * dim);
+        if (i % 4 === 2 && i < n - 1) {
+          const side = (i >> 2) % 2 ? 1 : -1, drift = nx - sw > 0 ? 1 : 0;
+          text('o', x + side * cw, y, '#d8c070', 0.8 * dim);
+          text(side > 0 ? (drift ? '~~-' : '~-') : (drift ? '-~' : '-~~'), side > 0 ? x + 2 * cw : x - (drift ? 3 : 4) * cw, y - 3, '#8fae5a', 0.75 * dim);
+        }
+      }
+      minY = Math.min(minY, ty);
+    });
+    drawArt(S.ledge[0].r, 0, kb + RH * 0.6, 0.9 * dim);
+    hit('kelp', 0, minY, W * 0.16, kb - minY + RH * 3);
+  }
+
+  // coral reef with anemone and clownfish, right edge
+  const ry = yAt(45) - sy, reef = S.reef[f2].r;
+  if (onScreen(ry, reef.h * RH)) {
+    const rx = W - reef.w * cw - (narrow ? -cw * 8 : W * 0.02);
+    drawArt(reef, rx, ry, 0.95 * dim);
+    hit('coral', rx, ry, 22 * cw, reef.h * RH);
+    const ax = rx + 30 * cw, ay = ry + RH * 0.5;
+    for (let i = 0; i < 2; i++) {
+      const a = t * 0.9 + i * Math.PI, cx = ax + Math.cos(a) * 5 * cw, cy = ay - RH * 1.2 + Math.sin(a * 2) * 8;
+      const c = S.clown[0][Math.sin(a) > 0 ? 'l' : 'r'];
+      drawArt(c, cx, cy, dim);
+      hit('clown', cx - 4, cy - 4, c.w * cw + 8, RH + 8);
+    }
+  }
+
+  // passers-by
+  PASSERS.forEach(p => {
+    const frames = S[p.id], a0 = frames[0].r, span = a0.w * cw + 40;
+    const cross = (W + span * 2) / p.sp, ph = (t + p.off) % (p.period + cross);
+    if (ph > cross) return;
+    const y = yAt(p.m) - sy + Math.sin(t * 0.5 + p.off) * 14;
+    if (!onScreen(y, a0.h * RH)) return;
+    const pass = Math.floor((t + p.off) / (p.period + cross)), ltr = pass % 2 === 0;
+    const fr = frames[frames.length > 1 ? Math.floor(t * (p.id === 'shark' ? 3 : 1.3)) % frames.length : 0][ltr ? 'r' : 'l'];
+    const x = ltr ? -span + ph * p.sp : W + span - ph * p.sp - fr.w * cw;
+    const fl = flashOf(p.id, dt);
+    if (fl) glow('#9fe8ff', 12 * fl);
+    drawArt(fr, x, y, clamp(0.85 + fl, 0, 1));
+    ctx.shadowBlur = 0;
+    hit(p.id, x, y, fr.w * cw, fr.h * RH);
+  });
+
+  // siphonophore: a long glowing chain drifting in the twilight
+  const sx0 = W * (narrow ? 0.08 : 0.2), syT = yAt(650) - sy;
+  if (onScreen(syT, 34 * RH)) {
+    const fl = flashOf('siphon', dt);
+    glow('#7cf0ff', 6 + fl * 10);
+    for (let i = 0; i < 34; i++) {
+      const x = sx0 + Math.sin(t * 0.45 + i * 0.22) * Math.min(i, 14) * 0.45 * cw, y = syT + i * RH * 0.8;
+      const ch = i === 0 ? '()' : i % 3 === 0 ? '*' : i % 3 === 1 ? 'o' : '.';
+      const hue = (190 + i * 6 + t * 20) % 360;
+      text(ch, x, y, `hsl(${hue},80%,72%)`, clamp(0.35 + 0.35 * Math.sin(t * 2 - i * 0.4) + fl, 0, 1) * dim);
+      if (i % 3 === 0 && i) text(i % 2 ? ',' : '`', x + cw * (i % 2 ? 1 : -1), y + 4, '#a0e0f0', 0.4 * dim);
+    }
+    ctx.shadowBlur = 0;
+    hit('siphon', sx0 - 8 * cw, syT, 16 * cw, 34 * RH * 0.8);
+  }
+
+  // giant squid hanging in the dark
+  const sq = S.squid[f2], qy = yAt(850) - sy + Math.sin(t * 0.3) * 24;
+  if (onScreen(qy, sq.r.h * RH)) {
+    const qx = W * (narrow ? 0.6 : 0.03) + Math.sin(t * 0.12) * W * 0.02, fl = flashOf('squid', dt);
+    if (fl) glow('#ff9a8a', 14 * fl);
+    drawArt(sq.r, qx, qy, clamp(0.55 + depthF * 0.2 + fl, 0, 1));
+    ctx.shadowBlur = 0;
+    hit('squid', qx, qy, sq.r.w * cw, sq.r.h * RH);
+  }
+
+  // anglerfish: barely visible body, bright lure
+  const ay2 = yAt(2300) - sy;
+  if (onScreen(ay2, 7 * RH)) {
+    const vx = Math.cos(t * 0.06), ax2 = W * (0.68 + 0.12 * Math.sin(t * 0.06)), an = S.angler[0][vx > 0 ? 'r' : 'l'];
+    const fl = flashOf('angler', dt);
+    drawArt(an, ax2, ay2, clamp(0.4 + fl, 0, 1));
+    const lx = vx > 0 ? ax2 + 10 * cw : ax2 + (an.w - 11) * cw, pulse = 0.6 + 0.4 * Math.sin(t * 2.4);
+    glow('#e8ff9a', 10 + 10 * pulse);
+    text('@', lx, ay2 - 2, '#f4ffb0', pulse);
+    ctx.shadowBlur = 0;
+    hit('angler', ax2, ay2 - 6, an.w * cw, an.h * RH + 6);
+  }
+  ctx.globalAlpha = 1;
+}
+
+function drawEffects(dt, t) {
+  const k = dt * 60;
+  // food pellets sink until eaten
+  for (let i = food.length - 1; i >= 0; i--) {
+    const p = food[i];
+    p.y += 0.45 * k; p.x += Math.sin(t * 2 + p.ph) * 0.25 * k;
+    if (p.eaten || p.y > H + 10) { if (p.eaten) burst(p.x, p.y, 2); food.splice(i, 1); continue; }
+    text(p.ch, p.x, p.y, '#e8c27a', 0.95);
+  }
+  // sonar rings light up whatever they sweep past
+  for (let i = pings.length - 1; i >= 0; i--) {
+    const p = pings[i];
+    p.r += 7 * k; p.life -= 0.011 * k; p.y = p.py - scrollYc;
+    if (p.life <= 0) { pings.splice(i, 1); continue; }
+    const n = Math.max(12, Math.floor(p.r * 2 * Math.PI / (cw * 1.4)));
+    glow('#7cf0ff', 10);
+    for (const [rr, ch, al] of [[p.r, 'o', 1], [p.r * 0.82, '.', 0.6]]) {
+      for (let j = 0; j < n; j++) {
+        const a = j / n * Math.PI * 2;
+        text(ch, p.x + Math.cos(a) * rr, p.y + Math.sin(a) * rr * 0.75, '#bff9ff', p.life * al);
+      }
+    }
+    ctx.shadowBlur = 0;
+    hits.forEach(h => { const d = Math.hypot(h.x + h.w / 2 - p.x, (h.y + h.h / 2 - p.y) / 0.75); if (Math.abs(d - p.r) < 40) flash[h.id] = 1; });
+    if (Math.random() < 0.5) { const a = Math.random() * 6.28; sparks.push({ x: p.x + Math.cos(a) * p.r, y: p.y + Math.sin(a) * p.r * 0.75, life: 1, hue: 170 + Math.random() * 60 }); }
+  }
+  // bioluminescent sparks, thicker the deeper you go
+  if (!reduce && Math.random() < depthF * 0.5 * waterF) sparks.push({ x: Math.random() * W, y: Math.random() * H, life: 1, hue: 170 + Math.random() * 90 });
+  for (let i = sparks.length - 1; i >= 0; i--) {
+    const s = sparks[i];
+    s.life -= 0.02 * k;
+    if (s.life <= 0) { sparks.splice(i, 1); continue; }
+    text(s.life > 0.5 ? '*' : '.', s.x, s.y, `hsl(${s.hue},90%,75%)`, Math.sin(s.life * Math.PI) * 0.9);
+  }
+  ctx.globalAlpha = 1;
+}
+
 function drawLife(dt, t) {
   const k = dt * 60, sy = scrollYc;
   if (waterF > 0.01) {
@@ -393,11 +767,15 @@ function drawLife(dt, t) {
         }
         if (n) { f.vx += ((cx / n - f.x) * 0.0007 + (ax / n - f.vx) * 0.05 + sx * 0.004) * k; f.vy += ((cy / n - f.y) * 0.0007 + (ay / n - f.vy) * 0.05 + sy2 * 0.004) * k; }
         f.vx += (tx - f.x) * 0.00012 * k; f.vy += (ty - f.y) * 0.00012 * k;
-        const mdx = f.x - mouse.x, mdy = f.y - mouse.y, md2 = mdx * mdx + mdy * mdy;
+        let fd = null, fdd = 90000;
+        for (const p of food) { const dx = p.x - f.x, dy = p.y - f.y, d2 = dx * dx + dy * dy; if (d2 < fdd) { fdd = d2; fd = p; } }
+        if (fd) { f.vx += (fd.x - f.x) * 0.0016 * k; f.vy += (fd.y - f.y) * 0.0016 * k; if (fdd < 196) fd.eaten = true; }
+        // fish stop fleeing the pointer for a moment after it feeds them
+        const mdx = f.x - mouse.x, mdy = f.y - mouse.y, md2 = t - fedAt < 2.5 ? 1e9 : mdx * mdx + mdy * mdy;
         if (md2 < 22500) { const m = (1 - Math.sqrt(md2) / 150) * 0.5; f.vx += mdx * m * 0.02 * k; f.vy += mdy * m * 0.02 * k; }
         if (f.x < 50) f.vx += 0.1 * k; if (f.x > W - 50) f.vx -= 0.1 * k;
         if (f.y < 60) f.vy += 0.1 * k; if (f.y > H - 80) f.vy -= 0.1 * k;
-        const sp = Math.hypot(f.vx, f.vy) || 1, lim = clamp(sp, 0.8, md2 < 22500 ? 4 : 2.1);
+        const sp = Math.hypot(f.vx, f.vy) || 1, lim = clamp(sp, 0.8, md2 < 22500 ? 4 : fd ? 3 : 2.1);
         f.vx = f.vx / sp * lim; f.vy = f.vy / sp * lim;
         f.x += f.vx * k; f.y += f.vy * k;
         if (Math.abs(f.vx) > 0.35) f.dir = f.vx > 0 ? 0 : 1;
@@ -411,9 +789,11 @@ function drawLife(dt, t) {
       const dTop = diveTop(), y = dTop + j.yf * dive.offsetHeight + Math.sin(t * 0.6 + i * 2) * 30 - sy;
       if (y < -120 || y > H + 20) return;
       const x = W * j.xf + Math.sin(t * 0.4 + i) * 24, f = Math.floor(t * 1.6 + i) % 2;
-      ctx.shadowColor = rgb(j.col); ctx.shadowBlur = 4 + nightVal * 12;
-      sprite(JELLY(f), x, y, rgb(j.col), waterF * 0.9);
+      const fl = flashOf('jelly' + i, dt);
+      ctx.shadowColor = rgb(j.col); ctx.shadowBlur = 4 + nightVal * 12 + fl * 12;
+      sprite(JELLY(f), x, y, rgb(j.col), clamp(waterF * 0.9 + fl, 0, 1));
       ctx.shadowBlur = 0;
+      hit('jelly' + i, x - 5 * cw, y, 10 * cw, 5 * RH);
     });
   }
   // plankton
@@ -445,7 +825,7 @@ function updateScroll() {
   waterF = clamp((H - r.top) / (H * 0.7), 0, 1) * clamp(r.bottom / (H * 0.6), 0, 1);
   const frac = clamp((scrollYc + H / 2 - (r.top + scrollYc)) / Math.max(1, dive.offsetHeight - H), 0, 1);
   const m = r.top < H / 2 ? depthFromFrac(frac) : 0;
-  depthF = clamp(m / 4000, 0, 1);
+  depthF = clamp(m / 4000, 0, 1); curDepth = m;
   const txt = (m === 0 ? 'Surface' : zoneOf(m)) + ' ' + fmt(m) + ' m';
   if (txt !== lastDepthText) { depthMeter.textContent = txt; lastDepthText = txt; }
 }
@@ -487,7 +867,8 @@ function animateFrames() {
   weeds.forEach((w, i) => { w.textContent = ((wf ^ (i & 1)) ? ART.seaweed_a : ART.seaweed_b).replace(/^\n/, '').replace(/\n$/, ''); });
   crab.textContent = wf ? ' (\\/)o.o(\\/)' : ' (/\\)o.o(/\\)';
 }
-animateFrames(); setInterval(animateFrames, 750);
+const critterFrames = () => { critterArt('vent', wf ? 'vent_a' : 'vent_b'); critterArt('dumbo', wf ? 'dumbo_a' : 'dumbo_b'); };
+animateFrames(); critterFrames(); setInterval(() => { animateFrames(); critterFrames(); }, 750);
 
 /* ---------- Treasure chest ---------- */
 const chest = $('#chest'), chestArt = $('#chestArt'), dlgText = $('#dlgText'), mailBox = $('#mailBox'), mailLink = $('#mailLink'), copyBtn = $('#copyBtn');
@@ -572,6 +953,139 @@ const clock = $('#clock');
 const tick = () => clock.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 tick(); setInterval(tick, 30000);
 
+/* ---------- Field guide ---------- */
+const guide = $('#guide'), gArt = $('#gArt');
+let gIdx = 0, gReturn = null;
+function showSpecies(i) {
+  gIdx = (i + GUIDE_ORDER.length) % GUIDE_ORDER.length;
+  const sp = SPECIES[GUIDE_ORDER[gIdx]];
+  const art = rows(sp.art.startsWith('\n') ? sp.art : '\n' + sp.art).join('\n');
+  gArt.innerHTML = sp.col ? `<span class="c-${sp.col}">${markup(art)}</span>` : markup(art);
+  $('#gZone').textContent = sp.zone;
+  $('#gName').textContent = sp.name;
+  $('#gSci').textContent = sp.sci;
+  $('#gFact').textContent = sp.fact;
+  $('#gCount').textContent = `${gIdx + 1} / ${GUIDE_ORDER.length}`;
+}
+function openGuide(id, x, y) {
+  showSpecies(GUIDE_ORDER.indexOf(id.replace(/\d+$/, '')));
+  gReturn = document.activeElement;
+  guide.hidden = false;
+  const r = guide.getBoundingClientRect(), pad = 10;
+  const left = x == null ? (W - r.width) / 2 : clamp(x + 16, pad, W - r.width - pad);
+  const top = y == null ? H - r.height - 60 : clamp(y - r.height / 2, pad, H - r.height - 50);
+  guide.style.left = left + 'px'; guide.style.top = top + 'px';
+  $('#gNext').focus({ preventScroll: true });
+}
+function closeGuide() {
+  if (guide.hidden) return;
+  guide.hidden = true;
+  if (gReturn && gReturn.focus && gReturn !== document.body) gReturn.focus({ preventScroll: true });
+}
+$('#gClose').addEventListener('click', closeGuide);
+$('#gPrev').addEventListener('click', () => showSpecies(gIdx - 1));
+$('#gNext').addEventListener('click', () => showSpecies(gIdx + 1));
+$('#guideBtn').addEventListener('click', () => { startMenu.hidden = true; openGuide(GUIDE_ORDER[0]); });
+$$('.critter').forEach(b => b.addEventListener('click', e => {
+  const r = b.getBoundingClientRect();
+  openGuide(b.dataset.species, e.detail ? e.clientX : r.right, e.detail ? e.clientY : r.top);
+}));
+addEventListener('keydown', e => { if (e.key === 'Escape') { closeGuide(); startMenu.hidden = true; } });
+
+/* ---------- Tips (XP balloon) ---------- */
+const balloon = $('#balloon');
+let balloonT = 0;
+const seen = new Set();
+function tip(key, title, body) {
+  if (seen.has(key)) return;
+  seen.add(key);
+  $('#bTitle').textContent = title; $('#bText').textContent = body;
+  balloon.hidden = false;
+  clearTimeout(balloonT); balloonT = setTimeout(() => { balloon.hidden = true; }, 9000);
+}
+$('#bClose').addEventListener('click', () => { balloon.hidden = true; });
+
+/* ---------- Clicking the water ---------- */
+const INTERACTIVE = 'a,button,input,textarea,.win,.startmenu,.taskbar,.balloon,.catch';
+const underwater = y => y > introH - scrollYc;
+document.addEventListener('click', e => {
+  if (e.target.closest(INTERACTIVE) || !waterF) return;
+  const id = hitAt(e.clientX, e.clientY);
+  if (id) { openGuide(id, e.clientX, e.clientY); return; }
+  if (!underwater(e.clientY)) return;
+  if (curDepth < 1000) {
+    fedAt = performance.now() / 1000;
+    for (let i = 0; i < 5; i++) food.push({ x: e.clientX + (Math.random() - 0.5) * 30, y: e.clientY + (Math.random() - 0.5) * 16, ph: Math.random() * 6.28, ch: '*.:'[i % 3] });
+  } else {
+    pings.push({ x: e.clientX, py: e.clientY + scrollYc, r: 4, life: 1 });
+  }
+});
+document.addEventListener('pointermove', e => {
+  const over = !!hitAt(e.clientX, e.clientY) && !e.target.closest(INTERACTIVE);
+  root.classList.toggle('over-creature', over);
+});
+function checkTips() {
+  if (curDepth > 20 && curDepth < 1000) tip('feed', 'You are underwater', 'Click the water to feed the fish. Click any creature to open its field guide entry.');
+  else if (curDepth >= 1000) tip('sonar', 'It is dark down here', 'Click the water to send a sonar ping and make the deep glow.');
+}
+
+/* ---------- Hydrothermal vent smoke ---------- */
+const ventEl = $('#vent');
+function ventSmoke() {
+  if (reduce || Math.random() > 0.35) return;
+  const r = ventEl.getBoundingClientRect();
+  if (r.bottom < 0 || r.top > H || !r.width) return;
+  bubbles.push(newBubble(true, r.left + r.width / 2 + (Math.random() - 0.5) * 6, r.top + 4, { vx: (Math.random() - 0.5) * 0.4, vy: 0.5 + Math.random() * 0.4, color: Math.random() < 0.25 ? '#e8907f' : '#b4bccb', ch: '()~.'[Math.floor(Math.random() * 4)] }));
+}
+
+/* ---------- Music: loops, muffled underwater ---------- */
+// shortcut: placeholder track at music/theme.mp3; swap the <audio> src when the real file exists.
+const music = $('#music'), musicBtn = $('#musicBtn');
+let actx = null, lowpass = null, mGain = null, musicOn = false, musicMissing = false, lastCut = 0;
+let musicWanted = true;
+try { musicWanted = localStorage.getItem('gt-music') !== 'off'; } catch (e) {}
+function setMusicBtn() {
+  musicBtn.textContent = musicMissing ? '[<?] NO TRACK' : musicOn ? '[<))] ON' : '[<x] OFF';
+  musicBtn.title = musicMissing ? 'Add a looping track at music/theme.mp3' : musicOn ? 'Mute music' : 'Play music';
+  musicBtn.setAttribute('aria-pressed', String(musicOn));
+}
+function initAudio() {
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if (actx || !AC) return;
+  actx = new AC();
+  lowpass = actx.createBiquadFilter(); lowpass.type = 'lowpass'; lowpass.frequency.value = 20000; lowpass.Q.value = 0.8;
+  mGain = actx.createGain(); mGain.gain.value = 0.6;
+  actx.createMediaElementSource(music).connect(lowpass).connect(mGain).connect(actx.destination);
+}
+function playMusic() {
+  initAudio();
+  if (actx && actx.state === 'suspended') actx.resume();
+  music.play().then(() => { musicOn = true; musicMissing = false; setMusicBtn(); }).catch(() => { musicOn = false; setMusicBtn(); });
+}
+music.addEventListener('error', () => { musicMissing = true; musicOn = false; setMusicBtn(); });
+musicBtn.addEventListener('click', () => {
+  if (musicOn) { music.pause(); musicOn = false; musicWanted = false; }
+  else { musicWanted = true; playMusic(); }
+  try { musicWanted ? localStorage.removeItem('gt-music') : localStorage.setItem('gt-music', 'off'); } catch (e) {}
+  setMusicBtn();
+});
+function firstGesture(e) {
+  removeEventListener('click', firstGesture, true); removeEventListener('keydown', firstGesture, true);
+  if (musicWanted && e.target !== musicBtn) playMusic();
+}
+addEventListener('click', firstGesture, true); addEventListener('keydown', firstGesture, true);
+function updateMusic() {
+  if (!lowpass) return;
+  // log-interpolate the cutoff from open air to a deep, dark murmur as the surface passes overhead
+  const sub = clamp((scrollYc + H * 0.5 - introH) / (H * 0.25), 0, 1);
+  const deep = lerp(1100, 320, depthF), cut = Math.exp(lerp(Math.log(20000), Math.log(deep), sub));
+  if (Math.abs(cut - lastCut) / cut < 0.03) return;
+  lastCut = cut;
+  lowpass.frequency.setTargetAtTime(cut, actx.currentTime, 0.15);
+  mGain.gain.setTargetAtTime(lerp(0.6, 0.42, sub), actx.currentTime, 0.2);
+}
+setMusicBtn();
+
 /* ---------- Main loop ---------- */
 let last = performance.now();
 function loop(now) {
@@ -580,7 +1094,10 @@ function loop(now) {
   ctx.font = FONT; ctx.textBaseline = 'top'; ctx.textAlign = 'left';
   ctx.clearRect(0, 0, W, H);
   drawBackground(now / 1000);
+  drawScenery(dt, now / 1000);
   drawLife(dt, now / 1000);
+  drawEffects(dt, now / 1000);
+  ventSmoke(); checkTips(); updateMusic();
   requestAnimationFrame(loop);
 }
 let rz; addEventListener('resize', () => { resize(); clearTimeout(rz); rz = setTimeout(layout, 120); });
