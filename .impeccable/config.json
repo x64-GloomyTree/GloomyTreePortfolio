@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "style.css"
+        ],
+        "createdAt": "2026-10-29T13:06:28.583Z",
+        "reason": "Agent: the flagged border-left is the Windows XP taskbar tray divider (.tray), part of the original look the user asked to keep, not a card accent"
+      }
+    ]
+  }
+}
